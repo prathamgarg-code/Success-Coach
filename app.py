@@ -1,11 +1,14 @@
 import streamlit as st
-from agent.chatbot import get_response
+from agent.chatbot import get_response,create_student_agent
 
 
 
 
 if "student_id" not in st.session_state:
     st.session_state.student_id = None
+if "agent" not in st.session_state:
+    st.session_state.agent = None
+
 
 if st.session_state.student_id is None:
     student_id = st.text_input("Enter Student ID")
@@ -13,6 +16,7 @@ if st.session_state.student_id is None:
     if st.button("Login"):
         if student_id:
             st.session_state.student_id = student_id
+            st.session_state.agent = create_student_agent(student_id)
             st.rerun()
 
     st.stop()
@@ -23,11 +27,12 @@ st.title("Student AI Coach")
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
+def get_student_id():
+    return st.session_state.student_id
 def submit():
     text = st.session_state.user_input
     if text:
-        response = get_response(text,st.session_state.student_id)
+        response = get_response(text, st.session_state.agent)
         st.session_state.messages.append(("You", text))
         st.session_state.messages.append(("AI", response))
         st.session_state.user_input = ""
