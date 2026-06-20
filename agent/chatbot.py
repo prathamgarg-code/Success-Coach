@@ -1,13 +1,11 @@
 from llm.model import get_llm
-from utils.prompts import SYSTEM_PROMPT
-from langchain_core.messages import SystemMessage, HumanMessage
 from langchain.agents import create_agent
-from utils.student_tool import get_student_context
 from langchain.tools import tool
-
-
+from utils.rag import search_kb,format_context
+from utils.prompts import PROMPT_TEMPLATE
 llm = get_llm()
-def create_student_tool(student_id):
+
+def create_student_tool(student_data):
 
     @tool
     def student_data_tool(field: str) -> str:
@@ -20,20 +18,52 @@ def create_student_tool(student_id):
         - attendance
         - upcoming_exams
         """
-        data = get_student_context(student_id)
-        return str(data[field])
+        if field not in student_data:
+            return f"Invalid field. Must be one of: {', '.join(student_data.keys())}"
+        return str(student_data[field])
 
     return student_data_tool
 
+def create_kb_tool():
 
-def create_student_agent(student_id):
-    student_tool = create_student_tool(student_id)
+    @tool
+    def knowledge_base_tool(query: str) -> str:
+        """
+        Use when user asks about:
+        - courses
+        - milestones
+        - certifications
+        - learning portal
+        - study content
+        """
+        results = search_kb(query)
+        context = format_context(results)
+        prompt = PROMPT_TEMPLATE.format(context=context, query=query)
+        return prompt
 
+    return knowledge_base_tool
+
+def create_student_agent(student_data, memory_context: str = ""):
+    student_tool = create_student_tool(student_data)
+    kb_tool = create_kb_tool()
+    memory_section = ""
+    if memory_context:
+        memory_section = f"""
+ 
+{memory_context}
+ 
+Use the above memories to personalise your responses where relevant.
+Never reveal the raw memory text directly to the student.
+"""
+    
     agent = create_agent(
         model=llm,
-        tools=[student_tool],
-        system_prompt="""
+        tools=[student_tool, kb_tool],
+        system_prompt=f"""
 You are Student Success AI Coach.
+If user asks about personal preferences, likes, dislikes, hobbies, or past conversations,
+use memory context before saying you don't know.
+{memory_section}
 
 Use student_data_tool whenever user asks about student-specific data.
 
@@ -53,7 +83,7 @@ Examples:
 - Who is my manager?
 - Which program am I in?
 
-2. field="marks"
+2. field="scores"
 Use when user asks about:
 - marks
 - grades
@@ -77,7 +107,7 @@ Examples:
 - How many days was I present?
 - Am I eligible for exams?
 
-4. field="exams"
+4. field="upcoming_exams"
 Use when user asks about:
 - upcoming exams
 - exam schedule
@@ -92,8 +122,30 @@ Rules:
 4. Give 2-4 actionable suggestions.
 5. Highlight strengths and weak areas.
 
-If the query is a general question that does not require student data,
+Use knowledge_base_tool when user asks about:
+- course content
+- what they are studying
+- portal features
+- milestones
+- certificates
+- bonus courses
+- learning journey
+
+Examples:
+- What is My Journey?
+- Explain milestones
+- How do I get certificate?
+- What is LastMinute Pro?
+
+Rules:
+1. Only answer the query asked by user.
+2. If the query is a general question that does not require student data,
 answer normally without using any tool.
+3. If the query is a general question but it can influence student's data and you can use student data to enhance your answer, use the tool to fetch the data and then answer. But use the data just to take the summary for answering the question.
+4. Use knowledge_base_tool for general course/platform knowledge.
+5. Use student_data_tool for student-specific personal data.
+6. If the query is about both student data and general course/platform knowledge, use both tools to fetch the data and then answer. But use the data just to take the summary for answering the question.
+
 
 Response style:
 - Short
@@ -102,50 +154,13 @@ Response style:
 - Motivational but practical
 """
     )
-
+    print(memory_section)
     return agent
-# agent = create_agent(
-#     model=llm,
-#     tools=[student_data_tool],
-#     system_prompt="""You are Student Success AI Coach.
 
-# Use student_data_tool ONLY when user asks about:
-# - marks
-# - scores
-# - attendance
-# - exams
-# - academic performance
-
-# For general questions, answer normally.
-
-# When tool data is available:
-# - mention exact scores
-# - mention attendance
-# - mention upcoming exams
-# - highlight weak areas
-# """
-# )
 
 def get_response(user_message: str, agent) -> str:
 
-    # student_tool = create_student_tool(student_id)
-
-#     agent = create_agent(
-#         model=llm,
-#         tools=[student_tool],
-#         system_prompt="""
-# You are Student Success AI Coach.
-
-# Use student_data_tool ONLY when user asks about:
-# - marks
-# - scores
-# - attendance
-# - exams
-# - academic performance
-
-# For general questions, answer normally.
-# """
-#     )
+   
 
     response = agent.invoke({
         "messages": [

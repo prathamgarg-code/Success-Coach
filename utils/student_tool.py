@@ -63,20 +63,3 @@ def get_student_context(student_id):
 
 
 
-# def student_data_tool(query: str) -> str:
-#     """
-#     Use this tool when user asks about:
-#     marks, scores, attendance, exams, performance, academic progress.
-#     """
-#     # student_id = st.session_state.student_id
-#     import streamlit as st
-#     print(st.session_state)
-#     student_id = st.session_state.student_id
-#     if student_id is None:
-#         return "no student logged in. Please login first."
-#     data = get_student_context(student_id)
-
-#     if not data["roster"]:
-#         return "Student not found."
-
-#     return str(data)
