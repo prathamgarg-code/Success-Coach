@@ -8,9 +8,9 @@ def get_llm():
     )
     return llm
 
-def get_llm_deterministic():
+def get_llm_deterministic(temperature: float = 0.0):
     llm = ChatOpenAI(
         model=MODEL_NAME,
-        temperature=0.0
+        temperature=temperature
     )
     return llm

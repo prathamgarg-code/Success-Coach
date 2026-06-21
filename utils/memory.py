@@ -8,20 +8,22 @@ load_dotenv()
 client = MemoryClient(api_key=os.getenv("MEM0_API_KEY"))
 
 
-def get_memories(user_id: str) -> str:
+def get_memories(user_id: str, query: str = "user") -> str:
     """
     Fetch all stored memories for a student.
     Returns a formatted context block string, or empty string if none.
     """
     try:
-        response = client.search(query="student", filters={"user_id": user_id}, limit=20)
-        print(response)
-        print(type(response))
+        response = client.search(query=query, filters={"user_id": user_id}, limit=80)
+        # print(response)
+        # print(type(response))
         memories = response["results"]
         if not memories:
             return ""
         
         lines = [f"- {m['memory']}" for m in memories]
+        print(f"{query}\n\n\n")
+        
         print(lines)
         return "### What I remember about this student:\n" + "\n".join(lines)
     except Exception as e:
@@ -97,3 +99,25 @@ def save_session_summary(student_id: str, conversation: list[dict]) -> None:
  
     except Exception as e:
         print(f"[Memory] Failed to save session summary: {e}")
+
+def get_session_summaries(student_id: str) -> str:
+    """
+    Fetches all session summaries stored for a student under coach_{student_id}.
+    Used by brief_agent.py to pull past session history for the coach brief.
+    Returns a formatted string, or empty string if none found.
+    """
+    try:
+        coach_user_id = f"coach_{student_id}"
+        response = client.search(
+            query="session summary",
+            filters={"user_id": coach_user_id},
+            limit=20
+        )
+        memories = response["results"]
+        if not memories:
+            return ""
+        lines = [f"- {m['memory']}" for m in memories]
+        return "### Past Session Summaries:\n" + "\n".join(lines)
+    except Exception as e:
+        print(f"[Memory] Failed to fetch session summaries: {e}")
+        return ""

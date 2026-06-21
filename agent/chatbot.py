@@ -43,9 +43,20 @@ def create_kb_tool():
 
     return knowledge_base_tool
 
-def create_student_agent(student_data, memory_context: str = ""):
+def create_student_agent(student_data, memory_context: str = "",profile_context: str = ""):
     student_tool = create_student_tool(student_data)
     kb_tool = create_kb_tool()
+    # Build profile section — stable long-term facts from disk
+    profile_section = ""
+    if profile_context:
+        profile_section = f"""
+ 
+{profile_context}
+ 
+Use the above profile to deeply personalise your responses.
+This is stable long-term knowledge about the student — treat it as ground truth.
+Never reveal the raw profile text directly to the student.
+"""
     memory_section = ""
     if memory_context:
         memory_section = f"""
@@ -133,7 +144,8 @@ You receive the following context before responding:
    - Relevant memories from previous sessions
    - Memory context:
    {memory_section}
-
+   - Profile context:
+   {profile_section}
 4. External tool outputs (optional)
    - Student-specific academic data
    - Knowledge base information
@@ -202,9 +214,16 @@ Prioritize study related information first and then personal preferences like ho
 Prioritize information in this order:
 
 1. Current user message
-2. Current session conversation
+2. Profile context (stable long-term facts)
 3. Retrieved long-term memory
 4. General coaching knowledge
+
+IMPORTANT MEMORY PRIORITY RULE:
+For questions about the student's goals, preferences, weaknesses, habits, 
+mental patterns, or likings — ALWAYS use the Student Profile(profile context) as the primary 
+source. It is more complete than episodic memory.
+Episodic memory only adds recent updates — never use it alone to answer 
+profile questions.
 
 If memory conflicts with current user message, trust current user message.
 
@@ -421,13 +440,14 @@ Your goal is to continuously help the student improve and maximize their success
     return agent
 
 
-def get_response(user_message: str, agent) -> str:
+def get_response(user_message: str, agent, relevant_memories: str="") -> str:
 
    
 
     response = agent.invoke({
         "messages": [
-            {"role": "user", "content": user_message}
+            {"role": "user", "content": user_message},
+            {"role": "system", "content": f"Relevant memories:\n{relevant_memories}"}
         ]
     })
 

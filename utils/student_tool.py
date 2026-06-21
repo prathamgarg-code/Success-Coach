@@ -18,11 +18,10 @@ creds = Credentials.from_service_account_file(
 
 client = gspread.authorize(creds)
 spreadsheet = client.open_by_key(SHEET_ID)
-print("Service account:", creds.service_account_email)
-print("Spreadsheet:", spreadsheet.title)
+
 
 sheet = spreadsheet.worksheet("signal_sheet")
-print("Worksheet:", sheet.title)
+
 
 
 
@@ -92,4 +91,20 @@ def append_signal_row(signal: dict) -> None:
         print(f"[Sheets] Failed to append signal row: {e}")
         
  
+def get_all_signals() -> list[dict]:
+    """
+    Fetches all unactioned signals from signal_sheet for the coach workflow.
+    Returns a list of dicts with keys:
+        student_id, signal_type, severity, urgency, reason, timestamp, actioned
+    """
+    try:
+        sheet = spreadsheet.worksheet("signal_sheet")
+        rows = sheet.get_all_records()
+        # Only return signals not yet actioned
+        unactioned = [row for row in rows if str(row.get("actioned", "")).upper() != "TRUE"]
+        print(f"[Sheets] Fetched {len(unactioned)} unactioned signal(s).")
+        return unactioned
+    except Exception as e:
+        print(f"[Sheets] Failed to fetch signals: {e}")
+        return []
 

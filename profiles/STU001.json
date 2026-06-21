@@ -1,0 +1,25 @@
+{
+  "student_id": "STU001",
+  "goals": [
+    "wants to become a forward deployed engineer"
+  ],
+  "preferences": [
+    "likes to study at night",
+    "yoga helps study better",
+    "likes short, practical help"
+  ],
+  "weaknesses": [],
+  "habits": [
+    "studies at night",
+    "yoga helps with studying"
+  ],
+  "mental_patterns": [
+    "focus improves with yoga",
+    "energy pattern may change"
+  ],
+  "likings": [
+    "yoga",
+    "football"
+  ],
+  "last_updated": "2026-06-22 01:40"
+}
