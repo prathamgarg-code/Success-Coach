@@ -2,7 +2,7 @@ import streamlit as st
 from agent.chatbot import get_response,create_student_agent
 from utils.student_tool import get_student_context
 from utils.memory import get_memories, save_memories, save_session_summary
-
+from agent.signal_agent import detect_and_save_signals
 
 if "student_id" not in st.session_state:
     st.session_state.student_id = None
@@ -43,6 +43,11 @@ if st.button("Logout"):
             conversation=st.session_state.conversation_log
         )
         save_session_summary(st.session_state.student_id, st.session_state.conversation_log)
+
+        detect_and_save_signals(
+            student_id=st.session_state.student_id,
+            conversation=st.session_state.conversation_log
+        )
     # Clear all session state
     for key in list(st.session_state.keys()):
         del st.session_state[key]

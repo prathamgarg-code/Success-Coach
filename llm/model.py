@@ -7,3 +7,10 @@ def get_llm():
         temperature=0.5
     )
     return llm
+
+def get_llm_deterministic():
+    llm = ChatOpenAI(
+        model=MODEL_NAME,
+        temperature=0.0
+    )
+    return llm
