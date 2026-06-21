@@ -440,13 +440,19 @@ Your goal is to continuously help the student improve and maximize their success
     return agent
 
 
-def get_response(user_message: str, agent, relevant_memories: str="") -> str:
+def get_response(user_message: str, agent, relevant_memories: str="",profile_context: str = "") -> str:
 
-   
+    enriched_message = user_message
+    if profile_context:
+        enriched_message = (
+            f"[Student profile for reference — prefer this for profile questions]\n"
+            f"{profile_context}\n\n"
+            f"Student message: {user_message}"
+        )
 
     response = agent.invoke({
         "messages": [
-            {"role": "user", "content": user_message},
+            {"role": "user", "content": enriched_message},
             {"role": "system", "content": f"Relevant memories:\n{relevant_memories}"}
         ]
     })

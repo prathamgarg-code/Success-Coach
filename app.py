@@ -142,7 +142,8 @@ def submit():
     text = st.session_state.user_input
     if text:
         relevant_memories = get_memories(st.session_state.student_id, query=text)
-        response = get_response(text, st.session_state.agent, relevant_memories)
+        profile_context = format_profile(st.session_state.profile)
+        response = get_response(text, st.session_state.agent, relevant_memories, profile_context)
         st.session_state.messages.append(("You", text))
         st.session_state.messages.append(("AI", response))
         # Update raw log for Mem0 (saved at logout)
