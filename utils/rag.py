@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
-
+import streamlit as st
 load_dotenv()
 
 # Paths — must match ingest_kb.py
@@ -12,7 +12,7 @@ COLLECTION_NAME = "knowledge_base"
 # Load the existing vectorstore (no re-ingestion)
 embeddings = OpenAIEmbeddings(
     model="text-embedding-3-small",
-    api_key=os.getenv("OPENAI_API_KEY")
+    api_key=st.secrets["OPENAI_API_KEY"]
 )
 
 vectorstore = Chroma(

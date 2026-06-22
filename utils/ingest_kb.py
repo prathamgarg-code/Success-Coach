@@ -4,7 +4,7 @@ from langchain_community.document_loaders import DirectoryLoader, UnstructuredMa
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
-
+import streamlit as st
 load_dotenv()
 
 # Paths
@@ -35,7 +35,7 @@ def ingest():
     # 3. Embed and store in ChromaDB
     embeddings = OpenAIEmbeddings(
         model="text-embedding-3-small",
-        api_key=os.getenv("OPENAI_API_KEY")
+        api_key=st.secrets["OPENAI_API_KEY"]
     )
 
     vectorstore = Chroma.from_documents(

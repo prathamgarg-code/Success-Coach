@@ -4,15 +4,15 @@ import streamlit as st
 from langchain.tools import tool
 import os
 from dotenv import load_dotenv
-
+import streamlit as st
 load_dotenv()
 
-SHEET_ID = os.getenv("GOOGLE_SPREADSHEET_ID")
+SHEET_ID = st.secrets["GOOGLE_SPREADSHEET_ID"]
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
-creds = Credentials.from_service_account_file(
-    "credentials.json",
+creds = Credentials.from_service_account_info(
+    dict(st.secrets["gcp_credentials"]),
     scopes=SCOPES
 )
 

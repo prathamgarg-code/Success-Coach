@@ -4,8 +4,8 @@ from mem0 import MemoryClient
 from dotenv import load_dotenv
 from llm.model import get_llm
 load_dotenv()
-
-client = MemoryClient(api_key=os.getenv("MEM0_API_KEY"))
+import streamlit as st
+client = MemoryClient(api_key=st.secrets["MEM0_API_KEY"])
 
 
 def get_memories(user_id: str, query: str = "user") -> str:
